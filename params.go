@@ -16,6 +16,10 @@ func (p *Params) ToString() string {
 	return p.value
 }
 
+func (p *Params) Split(sep string) []string {
+	return strings.Split(p.value, sep)
+}
+
 func (p *Params) ToInt() (int, error) {
 	if len(p.value) == 0 {
 		return 0, nil
@@ -151,7 +155,7 @@ func (p *ParamsSet) Load() error {
 		if strc.config != nil && strc.config.getMust() {
 			v, ok := pSet[key]
 			if ok {
-				p.paramKeyValue[key].value = v
+				p.paramKeyValue[key].value = strings.TrimSpace(v)
 			} else {
 				return fmt.Errorf("%s parameter must be set", key)
 			}
@@ -159,15 +163,15 @@ func (p *ParamsSet) Load() error {
 		if strc.config != nil && len(strc.config.getDefault()) > 0 {
 			v, ok := pSet[key]
 			if ok {
-				p.paramKeyValue[key].value = v
+				p.paramKeyValue[key].value = strings.TrimSpace(v)
 			} else {
-				p.paramKeyValue[key].value = strc.config.getDefault()
+				p.paramKeyValue[key].value = strings.TrimSpace(strc.config.getDefault())
 			}
 		}
 		if strc.config == nil {
 			v, ok := pSet[key]
 			if ok {
-				p.paramKeyValue[key].value = v
+				p.paramKeyValue[key].value = strings.TrimSpace(v)
 			} else {
 				p.paramKeyValue[key].value = ""
 			}
