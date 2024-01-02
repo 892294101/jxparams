@@ -44,7 +44,7 @@ func (p *Params) ToFloat64() (float64, error) {
 	if len(p.value) == 0 {
 		return 0, nil
 	}
-	
+
 	num, err := strconv.ParseFloat(p.value, 64)
 	if err != nil {
 		return 0, err
@@ -67,7 +67,7 @@ func (p *ParamsSet) SetConfigFile(s string) {
 	p.filePathSrc = s
 }
 
-func (p *ParamsSet) Check(s string) bool {
+func (p *ParamsSet) check(s string) bool {
 	_, ok := p.paramKeyValue[s]
 	if ok {
 		return true
@@ -93,7 +93,7 @@ func (p *ParamsSet) SetParams(s string, c ...*Config) {
 	if p.paramKeyValue == nil {
 		p.paramKeyValue = map[string]*Params{}
 	}
-	if !p.Check(value) {
+	if !p.check(value) {
 		if len(c) > 0 {
 			p.paramKeyValue[value] = &Params{config: c[0]}
 		} else {
