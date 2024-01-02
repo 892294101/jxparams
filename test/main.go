@@ -33,7 +33,6 @@ func main() {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	p.Check()
 	if v, ok := p.GetParams("jx.database.port"); ok {
 		fmt.Println(v.ToString())
 		fmt.Println(v.ToInt64())
