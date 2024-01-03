@@ -80,7 +80,7 @@ func (p *ParamsSet) check(s string) bool {
 }
 
 func (p *ParamsSet) GetParams(s string) (*Params, bool) {
-	if p.paramKeyValue == nil || len(p.paramSort) == 0 {
+	if p.paramKeyValue == nil || len(p.paramKeyValue) == 0 {
 		return nil, false
 	}
 
