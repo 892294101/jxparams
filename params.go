@@ -87,7 +87,11 @@ func (p *ParamsSet) GetParams(s string) (*Params, bool) {
 	value := strings.ToLower(s)
 	v, ok := p.paramKeyValue[value]
 	if ok {
-		return v, true
+		if len(v.value) > 0 {
+			return v, true
+		} else {
+			return nil, false
+		}
 	}
 	return nil, false
 }
