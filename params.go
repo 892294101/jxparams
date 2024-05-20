@@ -44,6 +44,14 @@ func (p *Params) ToInt64() (int64, error) {
 	return num, nil
 }
 
+func (p *Params) ToBool() (bool, error) {
+	b, err := strconv.ParseBool(p.value)
+	if err != nil {
+		return false, err
+	}
+	return b, nil
+}
+
 func (p *Params) ToFloat64() (float64, error) {
 	if len(p.value) == 0 {
 		return 0, nil
