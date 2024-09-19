@@ -105,6 +105,21 @@ func (p *ParamsSet) GetParams(s string) (*Params, bool) {
 }
 
 func (p *ParamsSet) SetParams(s string, c ...*Config) {
+	for _, config := range c {
+		if config.prefix {
+			if !strings.HasSuffix(s, ".") {
+				s = s + "."
+			}
+		}
+
+		if config.suffix {
+			if !strings.HasSuffix(s, ".") {
+				s = "." + s
+			}
+		}
+
+	}
+
 	value := strings.ToLower(s)
 	if p.paramKeyValue == nil {
 		p.paramKeyValue = map[string]*Params{}
@@ -115,7 +130,6 @@ func (p *ParamsSet) SetParams(s string, c ...*Config) {
 		} else {
 			p.paramKeyValue[value] = &Params{}
 		}
-
 		p.paramSort = append(p.paramSort, value)
 	}
 }
@@ -147,7 +161,9 @@ func (p *ParamsSet) Load() error {
 	}
 
 	pSet := map[string]string{}
+	//	var wSet []*Params
 
+	// 把文件中的参数加载到内存中
 	for _, s := range ps.Keys() {
 		if r, ok := ps.Get(s); ok {
 			pSet[strings.ToLower(s)] = r
@@ -156,14 +172,41 @@ func (p *ParamsSet) Load() error {
 		}
 	}
 
+	// 匹配参数是否在定义的参数中.
 	for key, _ := range pSet {
-		_, ok := p.paramKeyValue[strings.ToLower(key)]
+		_, ok := p.paramKeyValue[strings.ToLower(key)] // 精确匹配
 		if !ok {
-			return fmt.Errorf("%s non prefabricated parameters are illegal", key)
+			// 如果精确的匹配不到. 则匹配统配的参数
+			var e bool
+			for i, v := range p.paramSort {
+				if (p.paramKeyValue[v].config.prefix || p.paramKeyValue[v].config.suffix) && (strings.HasPrefix(key, v) || strings.HasSuffix(key, v)) {
+					p.paramKeyValue[key] = &Params{value: p.paramKeyValue[v].value, config: p.paramKeyValue[v].config} // 把统配到的参数赋值给新的参数.
+					p.paramKeyValue[key].value = pSet[key]                                                             // 把就参数值, 赋值给新参数
+					p.paramSort[i] = key                                                                               // 把排序参数修改为新的参数.
+					delete(p.paramKeyValue, v)                                                                         // 然后把原来旧的参数删除. 只保留新参数.
+					e = true
+					break
+				}
+				/*if !p.paramKeyValue[v].config.prefix && p.paramKeyValue[v].config.suffix && strings.HasSuffix(key, v) {
+					p.paramKeyValue[key] = p.paramKeyValue[v]
+					p.paramKeyValue[key].value = pSet[key]
+					p.paramSort[i] = key
+					delete(p.paramKeyValue, v)
+					e = true
+					break
+				}*/
+			}
+			if !e {
+				return fmt.Errorf("%s non prefabricated parameters are illegal", key)
+			}
 		}
 	}
 
+	// 效验参数. 按照配置.
+	// 必须参数必须存在.
+	// 如果设置默认值, 那么当参数不存在时, 将会自动设置参数
 	for key, strc := range p.paramKeyValue {
+		// 判断参数是否为必须
 		if strc.config != nil && strc.config.getMust() {
 			v, ok := pSet[key]
 			if ok {
@@ -172,6 +215,7 @@ func (p *ParamsSet) Load() error {
 				return fmt.Errorf("%s parameter must be set", key)
 			}
 		}
+		// 判断参数是否需要设置默认值
 		if strc.config != nil && len(strc.config.getDefault()) > 0 {
 			v, ok := pSet[key]
 			if ok {
@@ -180,6 +224,7 @@ func (p *ParamsSet) Load() error {
 				p.paramKeyValue[key].value = strings.TrimSpace(strc.config.getDefault())
 			}
 		}
+		// 如果参数的配置为nil, 则把文件中的参数值直接赋值.
 		if strc.config == nil {
 			v, ok := pSet[key]
 			if ok {
