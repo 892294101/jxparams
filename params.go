@@ -87,6 +87,48 @@ func (p *ParamsSet) check(s string) bool {
 	return false
 }
 
+// GetPrefix 获取前缀参数
+func (p *ParamsSet) GetPrefix(s string) (r []*Params, ok bool) {
+	if !strings.HasPrefix(s, ".") {
+		s = strings.ToLower(s) + "."
+	}
+
+	if p.paramKeyValue == nil || len(p.paramKeyValue) == 0 {
+		return nil, false
+	}
+
+	for s2, params := range p.paramKeyValue {
+		if strings.HasPrefix(s2, s) {
+			r = append(r, params)
+		}
+	}
+	if len(r) > 0 {
+		return r, true
+	}
+	return nil, false
+}
+
+// GetSuffix 获取后缀参数
+func (p *ParamsSet) GetSuffix(s string) (r []*Params, ok bool) {
+	if !strings.HasSuffix(s, ".") {
+		s = "." + strings.ToLower(s)
+	}
+
+	if p.paramKeyValue == nil || len(p.paramKeyValue) == 0 {
+		return nil, false
+	}
+
+	for s2, params := range p.paramKeyValue {
+		if strings.HasSuffix(s2, s) {
+			r = append(r, params)
+		}
+	}
+	if len(r) > 0 {
+		return r, true
+	}
+	return nil, false
+}
+
 func (p *ParamsSet) GetParams(s string) (*Params, bool) {
 	if p.paramKeyValue == nil || len(p.paramKeyValue) == 0 {
 		return nil, false
@@ -107,7 +149,7 @@ func (p *ParamsSet) GetParams(s string) (*Params, bool) {
 func (p *ParamsSet) SetParams(s string, c ...*Config) {
 	for _, config := range c {
 		if config.prefix {
-			if !strings.HasSuffix(s, ".") {
+			if !strings.HasPrefix(s, ".") {
 				s = s + "."
 			}
 		}
@@ -128,7 +170,7 @@ func (p *ParamsSet) SetParams(s string, c ...*Config) {
 		if len(c) > 0 {
 			p.paramKeyValue[value] = &Params{config: c[0]}
 		} else {
-			p.paramKeyValue[value] = &Params{}
+			p.paramKeyValue[value] = &Params{config: &Config{}}
 		}
 		p.paramSort = append(p.paramSort, value)
 	}
@@ -173,17 +215,20 @@ func (p *ParamsSet) Load() error {
 	}
 
 	// 匹配参数是否在定义的参数中.
+	clearSet := map[string]string{}
 	for key, _ := range pSet {
 		_, ok := p.paramKeyValue[strings.ToLower(key)] // 精确匹配
 		if !ok {
 			// 如果精确的匹配不到. 则匹配统配的参数
 			var e bool
-			for i, v := range p.paramSort {
+			for _, v := range p.paramSort {
 				if (p.paramKeyValue[v].config.prefix || p.paramKeyValue[v].config.suffix) && (strings.HasPrefix(key, v) || strings.HasSuffix(key, v)) {
 					p.paramKeyValue[key] = &Params{value: p.paramKeyValue[v].value, config: p.paramKeyValue[v].config} // 把统配到的参数赋值给新的参数.
 					p.paramKeyValue[key].value = pSet[key]                                                             // 把就参数值, 赋值给新参数
-					p.paramSort[i] = key                                                                               // 把排序参数修改为新的参数.
-					delete(p.paramKeyValue, v)                                                                         // 然后把原来旧的参数删除. 只保留新参数.
+					//p.paramSort[i] = key
+					//delete(p.paramKeyValue, v).
+					p.paramSort = append(p.paramSort, key) // 然后把原来旧的参数删除. 只保留新参数
+					clearSet[v] = ""
 					e = true
 					break
 				}
@@ -198,6 +243,16 @@ func (p *ParamsSet) Load() error {
 			}
 			if !e {
 				return fmt.Errorf("%s non prefabricated parameters are illegal", key)
+			}
+		}
+	}
+
+	for key, _ := range clearSet {
+		delete(p.paramKeyValue, key)
+		for i, s := range p.paramSort {
+			if strings.EqualFold(s, key) {
+				p.paramSort = append(p.paramSort[:i], p.paramSort[i+1:]...)
+				break
 			}
 		}
 	}

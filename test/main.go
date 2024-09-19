@@ -28,19 +28,25 @@ func main() {
 		p.SetParams("jx.redis.password")*/
 	p.SetParams("auth", jxparams.NewConfig().SetPrefix())
 	p.SetParams("appcode", jxparams.NewConfig().SetSuffix())
-	p.SetParams("port", jxparams.NewConfig().SetDefault("100"))
+	p.SetParams("ksajfkasjdf", jxparams.NewConfig().SetSuffix().SetDefault("12312"))
+	p.SetParams("port", jxparams.NewConfig().SetDefault("1521"))
 	p.SetConfigFile("/tmp/test.conf")
 
 	if err := p.Load(); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
-	if v, ok := p.GetParams("jx.database.port"); ok {
-		fmt.Println(v.ToString())
-		fmt.Println(v.ToInt64())
-		fmt.Println(v.ToInt())
-		fmt.Println(v.ToFloat64())
-	}
 
 	p.Println()
+	fmt.Println("=====================================================")
+	v, _ := p.GetPrefix("auth")
+	for i, params := range v {
+		fmt.Println(i, params.ToString())
+	}
+	fmt.Println("=====================================================")
+	v, _ = p.GetSuffix("appcode")
+	for i, params := range v {
+		fmt.Println(i, params.ToString())
+	}
+
 }
