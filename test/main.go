@@ -44,13 +44,13 @@ const (
 func main() {
 	p := jxparams.NewParams()
 	p.SetConfigFile("/Users/kqwang/development/gowork/src/github.com/892294101/jxapo/aposerver/build/conf/shop.conf")
-	/*p.SetParams(ServerListenerHost, jxparams.NewConfig().SetDefault("0.0.0.0"))
+	p.SetParams(ServerListenerHost, jxparams.NewConfig().SetDefault("0.0.0.0"))
 	p.SetParams(ServerListenerPort, jxparams.NewConfig().SetDefault("7710"))
-	p.SetParams(ServerModel, jxparams.NewConfig().SetDefault("info"))*/
+	p.SetParams(ServerModel, jxparams.NewConfig().SetDefault("info"))
 	p.SetParams(ServerSSLCert)
 	p.SetParams(ServerSSLKey)
 
-	/*p.SetParams(OSSAccessKey, jxparams.NewConfig().SetMust())
+	p.SetParams(OSSAccessKey, jxparams.NewConfig().SetMust())
 	p.SetParams(OSSSecretKey, jxparams.NewConfig().SetMust())
 	p.SetParams(OSSApiAddress, jxparams.NewConfig().SetMust())
 	p.SetParams(OSSBucket, jxparams.NewConfig().SetMust())
@@ -78,7 +78,7 @@ func main() {
 	p.SetParams(SentinelMasterName)
 
 	p.SetParams(ClusterAddress)
-	p.SetParams(ClusterPassword)*/
+	p.SetParams(ClusterPassword)
 
 	if err := p.Load(); err != nil {
 		fmt.Println(err)

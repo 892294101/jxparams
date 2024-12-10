@@ -261,51 +261,86 @@ func (p *ParamsSet) Load() error {
 	// 必须参数必须存在.
 	// 如果设置默认值, 那么当参数不存在时, 将会自动设置参数
 	for key, strc := range p.paramKeyValue {
-		// 如果参数的配置为nil, 则把文件中的参数值直接赋值.
-		if strc.config == nil {
+		switch {
+		// 如果参数没有给定任何配置, 则直接从参数文件中取值并府填到参数中.
+		case strc.config == nil:
 			v, ok := pSet[key]
 			if ok {
 				p.paramKeyValue[key].value = strings.TrimSpace(v)
 			} else {
 				p.paramKeyValue[key].value = ""
 			}
-		}
-
-		// 判断参数是否为必须存在
-		if strc.config != nil && strc.config.getMust() {
+		// 如果参数是必须存在的. 则取参数值并设置.
+		// 如果参数没有给定值, 则取默认值.
+		case strc.config != nil:
 			v, ok := pSet[key]
 			if ok {
-				p.paramKeyValue[key].value = strings.TrimSpace(v)
-			} else {
-				return fmt.Errorf("%s parameter must be set", key)
-			}
-		}
-		// 非必须
-		if strc.config != nil && !strc.config.getMust() {
-			v, ok := pSet[key]
-			if ok {
-				// 查看是否存在值, 如果参数文件存在值, 则直接赋值
+				// 如果参数值不为空, 则直接复制
 				if len(strings.TrimSpace(v)) > 0 {
 					p.paramKeyValue[key].value = strings.TrimSpace(v)
 				} else {
-					// 如果参数文件不存在值, 则查看参数是否设置了默认值. 如果存在默认值, 则直接赋值.
-					if len(strc.config.getDefault()) > 0 {
+					// 如果参数为空, 并且还是必须设置值. 则返回错误
+					if strc.config.getMust() {
+						return fmt.Errorf("%s parameter must be set", key)
+					} else if len(strc.config.getDefault()) > 0 {
+						// 如果不是必须设置值. 则直接取默认值
 						p.paramKeyValue[key].value = strings.TrimSpace(strc.config.getDefault())
 					}
 				}
-
+			} else {
+				//如果参数值为空. 并且参数具有默认值, 则取默认值.
+				if len(strc.config.getDefault()) > 0 {
+					p.paramKeyValue[key].value = strings.TrimSpace(strc.config.getDefault())
+				}
 			}
 		}
-
-		/*// 判断参数是否需要设置默认值
-		if strc.config != nil && len(strc.config.getDefault()) > 0 {
-			v, ok := pSet[key]
-			if ok {
-				p.paramKeyValue[key].value = strings.TrimSpace(v)
-			} else {
-				p.paramKeyValue[key].value = strings.TrimSpace(strc.config.getDefault())
+		/*
+			// 如果参数的配置为nil, 则把文件中的参数值直接赋值.
+			if strc.config == nil {
+				v, ok := pSet[key]
+				if ok {
+					p.paramKeyValue[key].value = strings.TrimSpace(v)
+				} else {
+					p.paramKeyValue[key].value = ""
+				}
 			}
-		}*/
+
+			// 判断参数是否为必须存在
+			if strc.config != nil && strc.config.getMust() {
+				v, ok := pSet[key]
+				if ok {
+					p.paramKeyValue[key].value = strings.TrimSpace(v)
+				} else {
+					return fmt.Errorf("%s parameter must be set", key)
+				}
+			}
+			// 非必须
+			if strc.config != nil && !strc.config.getMust() {
+				v, ok := pSet[key]
+				if ok {
+					// 查看是否存在值, 如果参数文件存在值, 则直接赋值
+					if len(strings.TrimSpace(v)) > 0 {
+						p.paramKeyValue[key].value = strings.TrimSpace(v)
+					} else {
+						// 如果参数文件不存在值, 则查看参数是否设置了默认值. 如果存在默认值, 则直接赋值.
+						if len(strc.config.getDefault()) > 0 {
+							p.paramKeyValue[key].value = strings.TrimSpace(strc.config.getDefault())
+						}
+						continue
+					}
+
+				}
+			}
+
+			// 判断参数是否需要设置默认值
+			if strc.config != nil && len(strc.config.getDefault()) > 0 {
+				v, ok := pSet[key]
+				if ok {
+					p.paramKeyValue[key].value = strings.TrimSpace(v)
+				} else {
+					p.paramKeyValue[key].value = strings.TrimSpace(strc.config.getDefault())
+				}
+			}*/
 
 	}
 
