@@ -87,13 +87,14 @@ func main() {
 
 	p.Println()
 	fmt.Println("=====================================================")
-	v, _ := p.GetPrefix("auth")
-	for i, params := range v {
+	vv, _ := p.GetPrefix("redis")
+	for i, params := range vv {
 		fmt.Println(i, params.ToString())
 	}
-	fmt.Println("=====================================================")
-	v, _ = p.GetSuffix("appcode")
-	for i, params := range v {
+	fmt.Println("--------------------------=======================")
+	vs, _ := p.GetSuffix("address")
+
+	for i, params := range vs {
 		fmt.Println(i, params.ToString())
 	}
 

@@ -88,7 +88,8 @@ func (p *ParamsSet) check(s string) bool {
 }
 
 // GetPrefix 获取前缀参数
-func (p *ParamsSet) GetPrefix(s string) (r []*Params, ok bool) {
+func (p *ParamsSet) GetPrefix(s string) (r map[string]*Params, ok bool) {
+	r = make(map[string]*Params)
 	if !strings.HasPrefix(s, ".") {
 		s = strings.ToLower(s) + "."
 	}
@@ -99,7 +100,7 @@ func (p *ParamsSet) GetPrefix(s string) (r []*Params, ok bool) {
 
 	for s2, params := range p.paramKeyValue {
 		if strings.HasPrefix(s2, s) {
-			r = append(r, params)
+			r[s2] = params
 		}
 	}
 	if len(r) > 0 {
@@ -109,7 +110,8 @@ func (p *ParamsSet) GetPrefix(s string) (r []*Params, ok bool) {
 }
 
 // GetSuffix 获取后缀参数
-func (p *ParamsSet) GetSuffix(s string) (r []*Params, ok bool) {
+func (p *ParamsSet) GetSuffix(s string) (r map[string]*Params, ok bool) {
+	r = make(map[string]*Params)
 	if !strings.HasSuffix(s, ".") {
 		s = "." + strings.ToLower(s)
 	}
@@ -120,7 +122,7 @@ func (p *ParamsSet) GetSuffix(s string) (r []*Params, ok bool) {
 
 	for s2, params := range p.paramKeyValue {
 		if strings.HasSuffix(s2, s) {
-			r = append(r, params)
+			r[s2] = params
 		}
 	}
 	if len(r) > 0 {
